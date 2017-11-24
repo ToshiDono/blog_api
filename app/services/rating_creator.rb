@@ -3,33 +3,35 @@ class RatingCreator
     @params = params
   end
 
-  def average_rating
-    post.rating = sum_of_estimates.to_f / count_estimates
-    post.save!
-    post.rating
+  def rating
+    set_rating
+    @rating
   end
 
   private
 
-  def sum_of_estimates
-    ratings.reduce(0) { |accumulator, element| accumulator + element.estimation }
+  def set_rating
+    post.rating = average_rating
+    post.save!
   end
 
-  def count_estimates
-    ratings.size
-  end
-
-  def ratings
+  def average_rating
     new_rating
-    post.ratings
+    @rating ||= ActiveRecord::Base.connection.execute(query).values.first
+  end
+
+  def query
+    "SELECT CAST(AVG(estimation) as float)
+     FROM public.ratings
+     WHERE post_id = #{post_id};"
+  end
+
+  def post
+    @post ||= new_rating.post
   end
 
   def new_rating
     @new_rating ||= Rating.create!(rating_params)
-  end
-
-  def post
-    @post ||= Post.find(post_id)
   end
 
   def rating_params

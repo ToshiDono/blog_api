@@ -1,6 +1,6 @@
 class RatingsController < ApplicationController
   def create
-    @rating = RatingCreator.new(rating_params).average_rating
+    @rating = RatingCreator.new(rating_params).rating
     if @rating
       render json: @rating, status: 200
     else
