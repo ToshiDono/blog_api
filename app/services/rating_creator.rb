@@ -1,37 +1,37 @@
 class RatingCreator
   def initialize(params)
     @params = params
+    @post = Post.find_by(id: params[:rating][:post_id])
   end
 
   def rating
-    set_rating
-    @rating
+    create_rating_record
+    avg = average_rating
+    update_post_average_rating(avg)
   end
 
   private
 
-  def set_rating
-    post.rating = average_rating
-    post.save!
+  def create_rating_record
+    @post.ratings.create!(rating_params)
   end
 
+  # return float
   def average_rating
-    new_rating
-    @rating ||= ActiveRecord::Base.connection.execute(query).values.first
+    ActiveRecord::Base.connection.execute(query).values.first.first
+  end
+
+  # return float average rating
+  def update_post_average_rating(avg)
+    @post.rating = avg
+    @post.save!
+    @post.rating
   end
 
   def query
     "SELECT CAST(AVG(estimation) as float)
      FROM public.ratings
      WHERE post_id = #{post_id};"
-  end
-
-  def post
-    @post ||= new_rating.post
-  end
-
-  def new_rating
-    @new_rating ||= Rating.create!(rating_params)
   end
 
   def rating_params
