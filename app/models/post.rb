@@ -1,4 +1,4 @@
 class Post < ApplicationRecord
   belongs_to :user
-  has_one :rating
+  has_many :ratings
 end
